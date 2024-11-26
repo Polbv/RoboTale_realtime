@@ -317,6 +317,7 @@ def image_loop():
 def main():
     """Main function to run the image loop in a separate thread."""
     global current_image_path
+    load_dotenv()
     instructions_file_path="instruction.text"
     out_dir="outputs"
     asyncio.run(with_azure_openai(instructions_file_path, out_dir))
