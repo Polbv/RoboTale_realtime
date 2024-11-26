@@ -400,3 +400,7 @@ FodyWeavers.xsd
 # Binary archives
 *.tgz
 *.zip
+
+/python/samples/.env
+/python/samples/outputs
+/python/samples/venv
