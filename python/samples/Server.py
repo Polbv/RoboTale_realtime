@@ -77,6 +77,7 @@ def socket_setup():
 def socket_recieve():
          global server_socket,emotion
          emoption="joy"
+         last_message = ""
          while True:
             # Accept an incoming connection
             client_socket, client_address = server_socket.accept()
