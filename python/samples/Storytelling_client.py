@@ -48,7 +48,7 @@ image_list["sadness"]="input/sadness.jpg"
 # Create the main window
 current_image_path = "input/joy.jpeg"
 
-text_chunk_index=1
+text_chunk_index=0
 
 
 
@@ -95,6 +95,7 @@ async def receive_message_item(item: RTMessageItem, out_dir: str):
                     audio_data.extend(chunk)
                     l=sentence_dict[str(text_chunk_index)]["chunk_id"]
                     d=time.time()-start_audio
+                    print(sentence_dict[str(text_chunk_index)]["sentence_emotion"])
                     #print ("sentence_id", text_chunk_index,"sentence length: ",l, "time:",(d))
                     if (time.time()-start_audio)>l*0.22:
                         if(text_chunk_index<len(sentence_dict)+1):
@@ -107,10 +108,10 @@ async def receive_message_item(item: RTMessageItem, out_dir: str):
         
                             
                     while len(audio_data) >= sample_rate * channels * 2:
-                        await asyncio.sleep(0.5)  # Allow the callback to process the audio data
+                        await asyncio.sleep(1.5)  # Allow the callback to process the audio data
                 
                 while len(audio_data) > 0:
-                    await asyncio.sleep(1.5)
+                    await asyncio.sleep(2)
                 stream.stop()
                 stream.close()
                 stop_audio=time.time()
@@ -172,8 +173,9 @@ async def receive_message_item(item: RTMessageItem, out_dir: str):
             audio_task = asyncio.create_task(collect_audio(contentPart))
             transcript_task = asyncio.create_task(collect_transcript(contentPart))
             audio_data, audio_transcript = await asyncio.gather(audio_task, transcript_task)
-            print(prefix, f"Audio received with length: {len(audio_data)}")
+            #print(prefix, f"Audio received with length: {len(audio_data)}")
             #print(prefix, f"Audio Transcript: {audio_transcript}")
+            print (sentence_dict)
             
             """  with open(os.path.join(out_dir, f"{item.id}_{contentPart.content_index}.wav"), "wb") as out:
                 audio_array = np.frombuffer(audio_data, dtype=np.int16)
@@ -232,7 +234,7 @@ async def run(client: RTClient, instructions_file_path: str, out_dir: str):
         with open('languages.json', 'r') as json_file:
             lang_file = json.load(json_file)
 
-        lang=lang_file["Danish"]
+        lang=lang_file["English"]
         while True:
             user_message=""
             while user_message=="":
@@ -332,15 +334,17 @@ def client():
         HOST="192.168.218.63"
         PORT=12345
         client_socket.connect((HOST,PORT))
+        last_tci=0
         
         
         while True:
             try:
-                if (text_chunk_index>1) :
+                if (text_chunk_index>last_tci) :
                     message=sentence_dict[str(text_chunk_index)]["sentence_emotion"]
-                    client_socket.sendall(message.encode('utf-8'))
+                    client_socket.send(message.encode('utf-8'))
                     response=client_socket.recv(1024).decode('utf-8')
                     #print(response)
+                    last_tci=last_tci+1
             except(KeyboardInterrupt):
                 break
 
@@ -350,7 +354,7 @@ def main():
     """Main function to run the image loop in a separate thread."""
     global current_image_path
     load_dotenv()
-    instructions_file_path="instruction.text"
+    instructions_file_path="instructionsenglish.text"
     out_dir="outputs"
     asyncio.run(with_azure_openai(instructions_file_path, out_dir))
 
