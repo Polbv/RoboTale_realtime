@@ -1,3 +1,4 @@
+
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 
@@ -14,6 +15,7 @@ from dotenv import load_dotenv
 import sounddevice as sd
 import azureS2T as aS2T
 import json
+import socket
 #import tkinter as tk
 #from PIL import Image, ImageTk
 from rtclient import (
@@ -58,6 +60,7 @@ def log(*args):
 
 sentence_dict={}
 async def receive_message_item(item: RTMessageItem, out_dir: str):
+    global client_socket
     prefix = f"[response={item.response_id}][item={item.id}]"
     async for contentPart in item:
         if contentPart.type == "audio":
@@ -67,7 +70,7 @@ async def receive_message_item(item: RTMessageItem, out_dir: str):
                 global sentence_dict
                 global audio_id
                 global text_chunk_index
-                await asyncio.sleep(0.5)
+                await asyncio.sleep(1.5)
                 text_chunk_index=0
                 def callback(outdata, frames, time, status):
                    
@@ -97,6 +100,8 @@ async def receive_message_item(item: RTMessageItem, out_dir: str):
                         if(text_chunk_index<len(sentence_dict)+1):
                             start_audio=time.time()
                             text_chunk_index+=1
+                            
+                            
                     #if audio_id<int(sentence_dict[str(text_chunk_index)]["chunk_id"]+4):
                         #print("sentence:",sentence_dict[str(text_chunk_index)]["sentence"],"emotion:",sentence_dict[str(text_chunk_index)]["sentence_emotion"])
         
@@ -117,7 +122,7 @@ async def receive_message_item(item: RTMessageItem, out_dir: str):
                 #sd.play(audio_data, samplerate=sample_rate)
                 #sd.wait() 
                 return audio_data
-
+           
             async def collect_transcript(audioContentPart: RTAudioContent):
                 sentence_list=[]
                 sentence=""
@@ -126,9 +131,11 @@ async def receive_message_item(item: RTMessageItem, out_dir: str):
                 chunk_id=0
                 k=0
                 global sentence_dict
+                
                 async for chunk in audioContentPart.transcript_chunks():
                     chunk_id+=1
                     sentence+=chunk
+                    #print(chunk)
                     if chunk in [".", "?", "!",":"]:
                         
                         #append dict with k, sentence,chunk id and predicted_label
@@ -149,7 +156,9 @@ async def receive_message_item(item: RTMessageItem, out_dir: str):
                         else:
                             l=chunk_id
                         new_key = str(k)
-                        
+                        message=sentence
+                    
+
                         sentence_dict[new_key]={"sentence":sentence,"chunk_id":chunk_id,"sentence_emotion":predicted_label,"length":len(sentence)}
                         sentence=""
                         k+=1
@@ -211,11 +220,13 @@ async def receive_response(client: RTClient, response: RTResponse, out_dir: str)
 
 
 async def run(client: RTClient, instructions_file_path: str, out_dir: str):
+    global client_socket
     with open(instructions_file_path, encoding="utf-8") as instructions_file:
         instructions = instructions_file.read()
 
         log("Configuring Session...")
         await client.configure(instructions=instructions,voice='echo')
+       
         log("Done")
     
         with open('languages.json', 'r') as json_file:
@@ -225,7 +236,8 @@ async def run(client: RTClient, instructions_file_path: str, out_dir: str):
         while True:
             user_message=""
             while user_message=="":
-                user_message=aS2T.recognize_from_microphone(lang)
+                #user_message=aS2T.recognize_from_microphone(lang)
+                user_message=input("type your message ")
             #user_message = input("Enter your message (type 'stop' to end): ")
             if "Stop." in user_message or "Goodbye." in user_message or "Bye." in user_message:
                 break
@@ -240,6 +252,7 @@ async def run(client: RTClient, instructions_file_path: str, out_dir: str):
 
         log("Closing client...")
         await client.close()
+        client_socket.close()
         log("Client closed")
 
 
@@ -313,6 +326,25 @@ def image_loop():
 
     # Run the application
     window.mainloop()
+def client():
+        global text_chunk_index,sentence_dict
+        client_socket=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        HOST="192.168.218.63"
+        PORT=12345
+        client_socket.connect((HOST,PORT))
+        
+        
+        while True:
+            try:
+                if (text_chunk_index>1) :
+                    message=sentence_dict[str(text_chunk_index)]["sentence_emotion"]
+                    client_socket.sendall(message.encode('utf-8'))
+                    response=client_socket.recv(1024).decode('utf-8')
+                    #print(response)
+            except(KeyboardInterrupt):
+                break
+
+                
 
 def main():
     """Main function to run the image loop in a separate thread."""
@@ -354,4 +386,6 @@ if __name__ == "__main__":
         asyncio.run(with_azure_openai(instructions_file_path, out_dir))
     else:
         asyncio.run(with_openai(instructions_file_path, user_message_file_path, out_dir)) """
-    main()
+    thread = threading.Thread(target=main)
+    thread.start()
+    client()
