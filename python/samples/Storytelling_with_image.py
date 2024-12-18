@@ -221,12 +221,12 @@ async def run(client: RTClient, instructions_file_path: str, out_dir: str):
         with open('languages.json', 'r') as json_file:
             lang_file = json.load(json_file)
 
-        lang=lang_file["English"]
+        lang=lang_file["Danish"]
         while True:
             user_message=""
             while user_message=="":
-                #user_message=aS2T.recognize_from_microphone(lang)
-                user_message = input("Enter your message (type 'stop' to end): ")
+                user_message=aS2T.recognize_from_microphone(lang)
+                #user_message = input("Enter your message (type 'stop' to end): ")
             if "Stop." in user_message or "Goodbye." in user_message or "Bye." in user_message:
                 break
             
@@ -318,7 +318,7 @@ def main():
     """Main function to run the image loop in a separate thread."""
     global current_image_path
     load_dotenv()
-    instructions_file_path="instructionsenglish.text"
+    instructions_file_path="instruction.text"
     out_dir="outputs"
     asyncio.run(with_azure_openai(instructions_file_path, out_dir))
 
