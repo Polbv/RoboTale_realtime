@@ -76,7 +76,6 @@ async def receive_message_item(item: RTMessageItem, out_dir: str):
                 text_chunk_index=0
                 def callback(outdata, frames, time, status):
                    
-                    
                     if status:
                         print(status)
                     chunk_size = frames * 2  # 2 bytes per frame for int16
@@ -224,7 +223,7 @@ async def receive_response(client: RTClient, response: RTResponse, out_dir: str)
     async for item in response:
         print(prefix, f"Received item {item.id}")
         if item.type == "message":
-            #asyncio.create_task(receive_message_item(item, out_dir))
+            asyncio.create_task(receive_message_item(item, out_dir))
             await receive_message_item(item, out_dir)
         elif item.type == "function_call":
             asyncio.create_task(receive_function_call_item(item, out_dir))
