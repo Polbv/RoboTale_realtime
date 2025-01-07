@@ -99,7 +99,7 @@ async def receive_message_item(item: RTMessageItem, out_dir: str):
                     audio_tstamp=time.time()-timestart
                     #print(sentence_dict[str(text_chunk_index)]["sentence_emotion"])
                     #print ("sentence_id", text_chunk_index,"sentence length: ",l, "time:",(d))
-                    if(text_chunk_index<len(sentence_dict)):
+                    if(text_chunk_index<len(sentence_dict)-1):
                         if audio_tstamp>=(sentence_dict[str(text_chunk_index)]["sentence_timestamp"]*6.2+sentence_dict[str(text_chunk_index)]["length"]*0.02):
                             text_chunk_index+=1
                             print("audio timestamp",audio_tstamp,"sentence timestamp",sentence_dict[str(text_chunk_index)]["sentence_timestamp"]*7+sentence_dict[str(text_chunk_index-1)]["length"]*0.01)
