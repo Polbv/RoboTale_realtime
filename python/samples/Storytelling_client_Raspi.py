@@ -118,7 +118,7 @@ async def receive_message_item(item: RTMessageItem, out_dir: str):
                 while len(audio_data) > 0:
                     await asyncio.sleep(2)
                 text_chunk_index=len(sentence_dict)-1
-                message=sentence_dict[str(text_chunk_index-1)]["sentence_emotion"]
+                message=sentence_dict[str(text_chunk_index)]["sentence_emotion"]
                 client_socket.send(message.encode('utf-8'))
                 response=client_socket.recv(1024).decode('utf-8')
                 stream.stop()
