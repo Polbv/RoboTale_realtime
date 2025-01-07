@@ -90,6 +90,11 @@ async def receive_message_item(item: RTMessageItem, out_dir: str):
                 audio_id=0  
                 start_audio=time.time()
                 timestart=time.time()
+                print("audio timestamp",audio_tstamp,"sentence timestamp",sentence_dict[str(text_chunk_index)]["sentence_timestamp"]*7+sentence_dict[str(text_chunk_index-1)]["length"]*0.01)
+                print(sentence_dict[str(text_chunk_index)]["sentence"],"Emotion: ",sentence_dict[str(text_chunk_index)]["sentence_emotion"])
+                message=sentence_dict[str(text_chunk_index)]["sentence_emotion"]
+                client_socket.send(message.encode('utf-8'))
+                response=client_socket.recv(1024).decode('utf-8')
                 async for chunk in audioContentPart.audio_chunks():
                     
                     audio_id+=1
@@ -99,6 +104,7 @@ async def receive_message_item(item: RTMessageItem, out_dir: str):
                     audio_tstamp=time.time()-timestart
                     #print(sentence_dict[str(text_chunk_index)]["sentence_emotion"])
                     #print ("sentence_id", text_chunk_index,"sentence length: ",l, "time:",(d))
+
                     if(text_chunk_index<len(sentence_dict)-1):
                         if audio_tstamp>=(sentence_dict[str(text_chunk_index)]["sentence_timestamp"]*6.2+sentence_dict[str(text_chunk_index)]["length"]*0.02):
                             text_chunk_index+=1
@@ -117,10 +123,11 @@ async def receive_message_item(item: RTMessageItem, out_dir: str):
                 
                 while len(audio_data) > 0:
                     await asyncio.sleep(1)
-                text_chunk_index=len(sentence_dict)-1
-                message=sentence_dict[str(text_chunk_index)]["sentence_emotion"]
-                client_socket.send(message.encode('utf-8'))
-                response=client_socket.recv(1024).decode('utf-8')
+                    if (text_chunk_index!=len(sentence_dict)-1):
+                        text_chunk_index=len(sentence_dict)-1
+                        message=sentence_dict[str(text_chunk_index)]["sentence_emotion"]
+                        client_socket.send(message.encode('utf-8'))
+                        response=client_socket.recv(1024).decode('utf-8')
                 stream.stop()
                 stream.close()
                 stop_audio=time.time()
@@ -131,12 +138,14 @@ async def receive_message_item(item: RTMessageItem, out_dir: str):
            
             async def collect_transcript(audioContentPart: RTAudioContent):
                 sentence_list=[]
+            
                 sentence=""
                 audio_transcript: str = ""
                 global chunk_id
                 chunk_id=0
                 k=0
                 global sentence_dict
+                sentence_dict={}
                 timestart=time.time()
                 async for chunk in audioContentPart.transcript_chunks():
                     chunk_id+=1
@@ -178,7 +187,7 @@ async def receive_message_item(item: RTMessageItem, out_dir: str):
             audio_data, audio_transcript = await asyncio.gather(audio_task, transcript_task)
             #print(prefix, f"Audio received with length: {len(audio_data)}")
             #print(prefix, f"Audio Transcript: {audio_transcript}")
-            print (sentence_dict)
+            #print (sentence_dict)
             
             """  with open(os.path.join(out_dir, f"{item.id}_{contentPart.content_index}.wav"), "wb") as out:
                 audio_array = np.frombuffer(audio_data, dtype=np.int16)
