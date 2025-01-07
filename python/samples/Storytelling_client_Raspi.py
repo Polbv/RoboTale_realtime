@@ -253,8 +253,8 @@ async def run(client: RTClient, instructions_file_path: str, out_dir: str):
         while True:
             user_message=""
             while user_message=="":
-                #user_message=aS2T.recognize_from_microphone(lang)
-                user_message=input("type your message ")
+                user_message=aS2T.recognize_from_microphone(lang)
+                #user_message=input("type your message ")
             #user_message = input("Enter your message (type 'stop' to end): ")
             if "Stop." in user_message or "stop." in user_message or "Goodbye." in user_message or "Bye." in user_message:
                 break
