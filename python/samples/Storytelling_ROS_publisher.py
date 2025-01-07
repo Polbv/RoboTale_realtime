@@ -61,6 +61,7 @@ def log(*args):
 
 
 sentence_dict={}
+
 async def receive_message_item(item: RTMessageItem, out_dir: str):
     global client_socket
     prefix = f"[response={item.response_id}][item={item.id}]"

@@ -86,7 +86,7 @@ async def receive_message_item(item: RTMessageItem, out_dir: str):
                     outdata[:] = np.frombuffer(chunk, dtype=np.int16).reshape(-1, 1)
                     del audio_data[:chunk_size]
 
-                stream = sd.OutputStream(samplerate=sample_rate, channels=channels, dtype=dtype, callback=callback)
+                stream = sd.OutputStream(samplerate=sample_rate, channels=channels, dtype=dtype, callback=callback, blocksize=sample_rate // 10)
                 stream.start()
                 audio_id=0  
                 start_audio=time.time()
@@ -241,7 +241,7 @@ async def run(client: RTClient, instructions_file_path: str, out_dir: str):
         log("Configuring Session...")
         await client.configure(instructions=instructions,voice='echo')
         client_socket=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        HOST="192.168.120.240"
+        HOST="192.168.120.63"
         PORT=12345
         client_socket.connect((HOST,PORT))
         log("Done")
@@ -256,8 +256,8 @@ async def run(client: RTClient, instructions_file_path: str, out_dir: str):
                 #user_message=aS2T.recognize_from_microphone(lang)
                 user_message=input("type your message ")
             #user_message = input("Enter your message (type 'stop' to end): ")
-            if "Stop." in user_message or "Goodbye." in user_message or "Bye." in user_message:
-                break
+                if "Stop." in user_message or "Goodbye." in user_message or "Bye." in user_message:
+                    break
             
            
             log("Sending User Message...")
