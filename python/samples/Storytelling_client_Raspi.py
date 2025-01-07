@@ -100,7 +100,7 @@ async def receive_message_item(item: RTMessageItem, out_dir: str):
                     #print(sentence_dict[str(text_chunk_index)]["sentence_emotion"])
                     #print ("sentence_id", text_chunk_index,"sentence length: ",l, "time:",(d))
                     if(text_chunk_index<len(sentence_dict)-1):
-                        if audio_tstamp>=(sentence_dict[str(text_chunk_index)]["sentence_timestamp"]*6.2+sentence_dict[str(text_chunk_index)]["length"]*0.02):
+                        if audio_tstamp>=(sentence_dict[str(text_chunk_index)]["sentence_timestamp"]*6+sentence_dict[str(text_chunk_index)]["length"]*0.02):
                             text_chunk_index+=1
                             print("audio timestamp",audio_tstamp,"sentence timestamp",sentence_dict[str(text_chunk_index-1)]["sentence_timestamp"]*7+sentence_dict[str(text_chunk_index-1)]["length"]*0.01)
                             print(sentence_dict[str(text_chunk_index-1)]["sentence"],"Emotion: ",sentence_dict[str(text_chunk_index-1)]["sentence_emotion"])
@@ -116,7 +116,7 @@ async def receive_message_item(item: RTMessageItem, out_dir: str):
                         await asyncio.sleep(0.5)  # Allow the callback to process the audio data
                 
                 while len(audio_data) > 0:
-                    await asyncio.sleep(2)
+                    await asyncio.sleep(1)
                 text_chunk_index=len(sentence_dict)-1
                 message=sentence_dict[str(text_chunk_index)]["sentence_emotion"]
                 client_socket.send(message.encode('utf-8'))
