@@ -90,7 +90,7 @@ async def receive_message_item(item: RTMessageItem, out_dir: str):
                 audio_id=0  
                 start_audio=time.time()
                 timestart=time.time()
-                print("audio timestamp",audio_tstamp,"sentence timestamp",sentence_dict[str(text_chunk_index)]["sentence_timestamp"]*7+sentence_dict[str(text_chunk_index-1)]["length"]*0.01)
+                #print("audio timestamp",audio_tstamp,"sentence timestamp",sentence_dict[str(text_chunk_index)]["sentence_timestamp"]*7+sentence_dict[str(text_chunk_index-1)]["length"]*0.01)
                 print(sentence_dict[str(text_chunk_index)]["sentence"],"Emotion: ",sentence_dict[str(text_chunk_index)]["sentence_emotion"])
                 message=sentence_dict[str(text_chunk_index)]["sentence_emotion"]
                 client_socket.send(message.encode('utf-8'))
