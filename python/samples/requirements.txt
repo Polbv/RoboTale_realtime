@@ -15,10 +15,10 @@ pyttsx3
 pyusb
 wavio
 yacman
-sounddevice
 openai
 matplotlib
 numpy
 transformers
 simpleaudio
 torch
+fasttetxt

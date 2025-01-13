@@ -25,6 +25,8 @@ from rtclient import (
     RTResponse,
     UserMessageItem,
 )
+import fasttext
+import simpleaudio as sa
 start_time = time.time()
 
 # Example audio parameters (change these according to your data)
@@ -36,13 +38,20 @@ dtype = 'int16'  # example dtype, can be 'float32', 'int16', etc., depending on 
 
 
 image_list={}
-image_list["question"]="input/Questions.jpeg"
+""" image_list["question"]="input/Questions.jpeg"
 image_list["exclamation"]="input/surprise.jpeg"
 image_list["joy"]="input/joy.jpeg"
 image_list["love"]="input/love.png"
 image_list["surprise"]="input/surprise.jpeg"
 image_list["fear"]="input/fear.jpeg"
-image_list["sadness"]="input/sadness.jpg"
+image_list["sadness"]="input/sadness.jpg" """
+image_list['__label__question']="input/Questions.jpeg"
+image_list['__label__acknowledgement']="input/surprise.jpeg"
+image_list['__label__description']="input/joy.jpeg"
+image_list['__label__dialogue']="input/love.png"
+image_list['__label__action']="input/surprise.jpeg"
+image_list['__label__greeting']="input/fear.jpeg"
+#image_list["sadness"]="input/sadness.jpg"
 # Create the main window
 current_image_path = "input/joy.jpeg"
 
@@ -127,6 +136,9 @@ async def receive_message_item(item: RTMessageItem, out_dir: str):
 
             async def collect_transcript(audioContentPart: RTAudioContent):
                 sentence_list=[]
+                model=fasttext.load_model("text_classification_model.ftz")
+                
+                
                 timestart=time.time()
                 sentence=""
                 audio_transcript: str = ""
@@ -140,17 +152,17 @@ async def receive_message_item(item: RTMessageItem, out_dir: str):
                     text_tstamp=time.time()-timestart
                     
                     if chunk in [".", "?", "!",":"]:
-                        
+                        predicted_label,probability=model.predict( sentence)
                         #append dict with k, sentence,chunk id and predicted_label
                         # Perform text classification
-                        predicted_label=""
-                        if "?" in sentence:
-                             predicted_label="question"
-                        elif "!" in sentence:
-                             predicted_label="exclamation"
-                        else:
-                            result = pipeline(sentence)
-                            predicted_label = result[0]['label']
+                        #predicted_label=""
+                        #if "?" in sentence:
+                        #     predicted_label="question"
+                       # elif "!" in sentence:
+                        #     predicted_label="exclamation"
+                        #else:
+                         #   result = pipeline(sentence)
+                        #    predicted_label = result[0]['label']
                         # Print the predicted label
                        
                         if k>0:
@@ -233,6 +245,7 @@ async def run(client: RTClient, instructions_file_path: str, out_dir: str):
 
         lang=lang_file["English"]
         while True:
+            beep()
             user_message=""
             while user_message=="":
                 user_message=aS2T.recognize_from_microphone(lang)
@@ -323,7 +336,11 @@ def image_loop():
 
     # Run the application
     window.mainloop()
-
+def beep():
+        wave_obj = sa.WaveObject.from_wave_file('utils/blip-131856.wav')
+        play_obj = wave_obj.play()
+        play_obj.wait_done()
+        return
 def main():
     """Main function to run the image loop in a separate thread."""
     global current_image_path
