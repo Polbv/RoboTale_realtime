@@ -16,6 +16,7 @@ import sounddevice as sd
 import azureS2T as aS2T
 import json
 import socket
+import simpleaudio as sa
 #import tkinter as tk
 #from PIL import Image, ImageTk
 from rtclient import (
@@ -347,7 +348,11 @@ def client():
             except(KeyboardInterrupt):
                 break
 
-                
+def beep():
+        wave_obj = sa.WaveObject.from_wave_file('utils/blip-131856.wav')
+        play_obj = wave_obj.play()
+        play_obj.wait_done()
+        return               
 
 def main():
     """Main function to run the image loop in a separate thread."""
